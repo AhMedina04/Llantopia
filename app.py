@@ -12,7 +12,12 @@ UPLOAD_FOLDER = 'static/uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://postgres:N-bk&!0LhmvS~G~(DkTmDWq>M1+#?:@localhost:5432/LibreriaVirtual2'
+# Configuración dinámica de la base de datos (Compatible con Render y Localhost)
+database_url = os.getenv('DATABASE_URL')
+if database_url and database_url.startswith("postgres://"):
+    database_url = database_url.replace("postgres://", "postgresql+psycopg2://", 1)
+
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url or 'postgresql+psycopg2://postgres:N-bk&!0LhmvS~G~(DkTmDWq>M1+#?:@localhost:5432/LibreriaVirtual2'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
