@@ -4,9 +4,20 @@ from flask import Flask, render_template, request, redirect, url_for, flash, ses
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
 
 app = Flask(__name__)
 app.secret_key = 'clave_secreta_libreria_pro_v2'
+
+# Configuración de Cloudinary (para almacenamiento persistente en la nube)
+cloudinary.config(
+  cloud_name = os.getenv('CLOUDINARY_CLOUD_NAME'),
+  api_key = os.getenv('CLOUDINARY_API_KEY'),
+  api_secret = os.getenv('CLOUDINARY_API_SECRET'),
+  secure = True
+)
 
 UPLOAD_FOLDER = 'static/uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -46,7 +57,7 @@ class Libro(db.Model):
     sinopsis = db.Column(db.Text, nullable=False)
     tipo = db.Column(db.String(50), nullable=False) 
     categoria = db.Column(db.String(200), nullable=False)
-    archivo = db.Column(db.String(200), nullable=False)
+    archivo = db.Column(db.String(500), nullable=False)  # Ampliado para soportar URLs largas de Cloudinary
     interacciones = db.Column(db.Integer, default=0) 
     ultima_interaccion = db.Column(db.DateTime, nullable=True) 
     fecha_subida = db.Column(db.DateTime, default=datetime.now)
@@ -176,7 +187,7 @@ def buscar_live():
         'tipo': l.tipo,
         'promedio': l.promedio_calificacion,
         'es_audio': 'audiolibro' in l.tipo.lower(),
-        'archivo': url_for('static', filename='uploads/' + l.archivo)
+        'archivo': l.archivo if l.archivo.startswith('http') else url_for('static', filename='uploads/' + l.archivo)
     } for l in resultados]
 
     return jsonify(data)
@@ -529,12 +540,15 @@ def eliminar_libro(libro_id):
         flash('Acceso denegado.', 'danger')
         return redirect(url_for('pagina_principal'))
     libro_a_borrar = Libro.query.get_or_404(libro_id)
+    
+    # Intenta eliminar archivo local si existiera
     try:
-        archivo_path = os.path.join(app.config['UPLOAD_FOLDER'], libro_a_borrar.archivo)
-        if os.path.exists(archivo_path):
-            os.remove(archivo_path)
+        if not libro_a_borrar.archivo.startswith('http'):
+            archivo_path = os.path.join(app.config['UPLOAD_FOLDER'], libro_a_borrar.archivo)
+            if os.path.exists(archivo_path):
+                os.remove(archivo_path)
     except Exception as e:
-        print(f"Error al eliminar archivo físico: {e}")
+        print(f"Error al eliminar archivo físico local: {e}")
 
     Favorito.query.filter_by(libro_id=libro_id).delete()
     Resena.query.filter_by(libro_id=libro_id).delete()
@@ -628,13 +642,14 @@ def agregar_libro():
     if request.method == 'POST':
         archivo = request.files.get('archivo')
         if archivo and archivo.filename != '':
-            nombre_archivo = secure_filename(archivo.filename)
-            ruta_destino = os.path.join(app.config['UPLOAD_FOLDER'], nombre_archivo)
-            if os.path.exists(ruta_destino):
-                base, ext = os.path.splitext(nombre_archivo)
-                nombre_archivo = f"{base}_{int(datetime.now().timestamp())}{ext}"
-                ruta_destino = os.path.join(app.config['UPLOAD_FOLDER'], nombre_archivo)
-            archivo.save(ruta_destino)
+            # Sube el archivo (PDF, MP3, etc.) directamente a Cloudinary
+            try:
+                # resource_type="auto" permite que Cloudinary detecte si es imagen, video o audio/archivo raw
+                upload_result = cloudinary.uploader.upload(archivo, resource_type="auto")
+                url_archivo = upload_result.get('secure_url')
+            except Exception as e:
+                flash(f'Error al subir el archivo a Cloudinary: {e}', 'danger')
+                return redirect(url_for('agregar_libro'))
             
             categorias_lista = request.form.getlist('categorias')
             string_categorias = ", ".join(categorias_lista) if categorias_lista else "General"
@@ -645,11 +660,11 @@ def agregar_libro():
                 sinopsis=request.form['sinopsis'], 
                 tipo=request.form['tipo'], 
                 categoria=string_categorias, 
-                archivo=nombre_archivo
+                archivo=url_archivo
             )
             db.session.add(nuevo_libro)
             db.session.commit()
-            flash('¡Elemento agregado exitosamente!', 'success')
+            flash('¡Elemento agregado exitosamente a la nube!', 'success')
             return redirect(url_for('pagina_principal'))
     return render_template('agregar_libro.html')
 
