@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo - Llantopía</title>
+    <style>
+        :root {
+            --color-bg: #FFF3A0; --color-yellow: #FFD700; --color-slate: #4A4E57;
+            --color-dark: #2A2D32; --color-red: #9E2A2B; --color-blue: #4CC9F0; --color-white: #FFFFFF;
+        }
+        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; background-color: var(--color-bg); color: var(--color-dark); padding-bottom: 85px; }
+        header { background-color: var(--color-yellow); color: var(--color-dark); padding: 15px 20px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.08); gap: 15px; position: sticky; top: 0; z-index: 1000; }
+        header h1 { margin: 0; font-size: 22px; }
+        header h1 a { color: var(--color-dark); text-decoration: none; display: flex; align-items: center; gap: 8px; font-weight: bold; }
+        .search-form { display: flex; flex-grow: 1; max-width: 500px; background: var(--color-white); border-radius: 30px; padding: 4px 10px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); }
+        .search-input { flex-grow: 1; border: none; outline: none; padding: 8px 12px; font-size: 15px; background: transparent; }
+        .search-btn { background-color: var(--color-blue); color: var(--color-dark); border: none; padding: 6px 16px; border-radius: 20px; cursor: pointer; font-weight: bold; }
+        
+        .menu-container { position: relative; }
+        .dropbtn { background-color: var(--color-dark); color: var(--color-white); padding: 8px 14px; font-size: 14px; border: none; border-radius: 20px; cursor: pointer; font-weight: bold; }
+        .dropdown-content { display: none; position: absolute; left: 0; background-color: var(--color-white); min-width: 180px; box-shadow: 0px 8px 16px rgba(0,0,0,0.15); border-radius: 8px; z-index: 10; margin-top: 5px; }
+        .dropdown-content a { color: var(--color-dark); padding: 12px 16px; text-decoration: none; display: block; font-size: 14px; }
+        .dropdown-content a:hover { background-color: #f1f1f1; }
+        .menu-container:hover .dropdown-content { display: block; }
+        
+        .container { max-width: 1200px; margin: 20px auto; padding: 0 15px; }
+        .category-section { margin-bottom: 30px; background: var(--color-white); padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .category-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--color-bg); padding-bottom: 10px; margin-bottom: 15px; }
+        .category-title { font-size: 18px; color: var(--color-slate); margin: 0; font-weight: bold; }
+        .btn-ver-mas { color: var(--color-blue); font-size: 13px; font-weight: bold; text-decoration: none; }
+        
+        .quick-categories { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-bottom: 30px; }
+        .cat-card { padding: 15px; border-radius: 10px; text-align: center; color: var(--color-white); text-decoration: none; font-weight: bold; font-size: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .cat-romance { background-color: var(--color-red); }
+        .cat-fantasia { background-color: var(--color-blue); color: var(--color-dark); }
+        .cat-ciencia { background-color: var(--color-slate); }
+        .cat-estudio { background-color: var(--color-dark); }
+        .cat-libros { background-color: var(--color-yellow); color: var(--color-dark); }
+        .cat-audiolibros { background-color: var(--color-blue); color: var(--color-dark); }
+
+        .horizontal-scroll-container { display: flex; gap: 15px; overflow-x: auto; padding-bottom: 10px; }
+
+        /* TARJETAS COMPACTAS Y GIRATORIAS */
+        .book-card-container { perspective: 1000px; min-width: 220px; max-width: 220px; height: 310px; flex: 0 0 auto; cursor: pointer; }
+        .book-card-flipper { position: relative; width: 100%; height: 100%; transition: transform 0.5s ease; transform-style: preserve-3d; }
+        .book-card-container.flipped .book-card-flipper { transform: rotateY(180deg); }
+        
+        .book-card-front, .book-card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; background: #ffffff; border-radius: 10px; padding: 14px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; border: 1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+        .book-card-back { transform: rotateY(180deg); background: var(--color-dark); color: white; text-align: center; justify-content: center; gap: 12px; }
+
+        .book-card-front h3 { margin: 6px 0 2px; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .book-card-front p.autor { color: var(--color-slate); font-size: 12px; margin: 0 0 8px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        
+        .sinopsis-box { font-size: 12px; color: #4a5568; height: 95px; overflow-y: auto; background: #f8fafc; padding: 8px; border-radius: 6px; border: 1px solid #e2e8f0; margin-bottom: 8px; text-align: left; line-height: 1.4; }
+        
+        .rating-badge { display: flex; align-items: center; gap: 5px; font-size: 13px; font-weight: bold; color: var(--color-dark); margin-bottom: 8px; }
+        .rating-badge span { color: #f59e0b; font-size: 15px; }
+
+        .badge { display: inline-block; padding: 2px 7px; font-size: 10px; font-weight: bold; border-radius: 4px; background: #e0f2fe; color: #0369a1; }
+        .btn-comprar { background-color: var(--color-blue); color: var(--color-dark); padding: 8px 10px; border: none; border-radius: 6px; cursor: pointer; text-decoration: none; display: inline-block; font-weight: bold; font-size: 13px; width: 100%; box-sizing: border-box; text-align: center; }
+        .btn-favorito { position: absolute; top: 10px; right: 10px; background: white; border: 1px solid #cbd5e1; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 10; font-size: 13px; }
+        
+        .btn-flip-action { background-color: var(--color-blue); color: var(--color-dark); border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; font-size: 13px; }
+        .btn-flip-action:hover { opacity: 0.9; }
+
+        /* MODALES */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 22px; border-radius: 12px; width: 90%; max-width: 440px; max-height: 85vh; overflow-y: auto; position: relative; color: var(--color-dark); text-align: left; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+
+        .stars-selector { display: flex; gap: 8px; font-size: 28px; cursor: pointer; margin: 10px 0; justify-content: center; }
+        .star-item { color: #cbd5e1; transition: color 0.2s; }
+
+        /* TOAST NOTIFICACIÓN */
+        .toast-notificacion {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background-color: var(--color-dark);
+            color: var(--color-white);
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 13px;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.25);
+            z-index: 3000;
+            opacity: 0;
+            transition: all 0.3s ease;
+            pointer-events: none;
+            border: 1px solid var(--color-yellow);
+            text-align: center;
+            max-width: 80%;
+        }
+        .toast-notificacion.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--color-white); display: flex; justify-content: space-around; padding: 10px 0; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); z-index: 999; }
+        .nav-item { text-decoration: none; color: var(--color-slate); font-size: 12px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+        .nav-item span { font-size: 18px; }
+        .nav-item.active, .nav-item:hover { color: var(--color-red); font-weight: bold; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1><a href="{{ url_for('pagina_principal') }}">📚 Llantopía</a></h1>
+        <form action="{{ url_for('buscar') }}" method="GET" class="search-form">
+            <input class="search-input" type="search" name="q" placeholder="Buscar libros, autores..." required>
+            <button class="search-btn" type="submit">🔍 Buscar</button>
+        </form>
+        <div class="menu-container">
+            <button class="dropbtn">👤 {{ session.get('nombre_usuario', 'Invitado') }} ▾</button>
+            <div class="dropdown-content">
+                {% if session.get('correo_usuario') in ['anhuarmedrod@gmail.com', 'perlaaguirre890@gmail.com'] %}
+                    <a href="{{ url_for('agregar_libro') }}">➕ Agregar Libro</a>
+                {% endif %}
+                {% if session.get('correo_usuario') %}
+                    <a href="{{ url_for('perfil') }}">⚙️ Mi Perfil</a>
+                    <a href="{{ url_for('cerrar_sesion') }}" style="color: var(--color-red);">Cerrar Sesión</a>
+                {% else %}
+                    <a href="{{ url_for('iniciarSesion') }}">🔑 Iniciar Sesión</a>
+                    <a href="{{ url_for('registro') }}">📝 Registrarse</a>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <p style="color: {% if category == 'danger' %}var(--color-red){% else %}green{% endif %}; font-weight: bold;">{{ message }}</p>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="quick-categories">
+          <a href="{{ url_for('ver_categoria', nombre_categoria='Romance') }}" class="cat-card cat-romance">❤️ Romance</a>
+          <a href="{{ url_for('ver_categoria', nombre_categoria='Fantasía') }}" class="cat-card cat-fantasia">⭐ Fantasía</a>
+          <a href="{{ url_for('ver_categoria', nombre_categoria='Ciencia Ficción') }}" class="cat-card cat-ciencia">🚀 Ciencia Ficción</a>
+          <a href="{{ url_for('ver_categoria', nombre_categoria='Estudio') }}" class="cat-card cat-estudio">🎓 Estudio</a>
+          <a href="{{ url_for('ver_categoria', nombre_categoria='libros') }}" class="cat-card cat-libros">📖 Libros</a>
+          <a href="{{ url_for('ver_categoria', nombre_categoria='audiolibros') }}" class="cat-card cat-audiolibros">🎧 Audiolibros</a>
+        </div>
+
+        <!-- CONTINUAR LEYENDO / ESCUCHANDO -->
+        {% if continuar %}
+        <div class="category-section" id="seccion-continuar">
+            <div class="category-header">
+                <h3 class="category-title">▶️ Continuar Leyendo / Escuchando</h3>
+                <a href="{{ url_for('ver_categoria', nombre_categoria='continuar') }}" class="btn-ver-mas">Ver más &raquo;</a>
+            </div>
+            <div class="horizontal-scroll-container">
+                {% for libro in continuar %}
+                    <div class="book-card-container" id="continuar-container-{{ libro.id }}" onclick="voltearTarjeta(this)">
+                        <div class="book-card-flipper">
+                            <div class="book-card-front">
+                                <button type="button" title="Quitar" onclick="event.stopPropagation(); quitarDeContinuar({{ libro.id }})" style="position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,0.06); border: none; border-radius: 50%; width: 22px; height: 22px; cursor: pointer; font-size: 11px; color: #555; display: flex; align-items: center; justify-content: center; z-index: 10;">✖</button>
+                                {% if session.get('usuario_id') %}
+                                    <button type="button" class="btn-favorito" onclick="event.stopPropagation(); toggleFavorito({{ libro.id }}, this)">
+                                        {% if libro.id in libros_favoritos_ids %}⭐{% else %}☆{% endif %}
+                                    </button>
+                                {% endif %}
+                                <div>
+                                    <span class="badge">{{ libro.tipo }}</span>
+                                    <h3 title="{{ libro.titulo }}">{{ libro.titulo }}</h3>
+                                    <p class="autor"><strong>Autor:</strong> {{ libro.autor }}</p>
+                                    <div class="sinopsis-box">{{ libro.sinopsis }}</div>
+                                </div>
+                                <div>
+                                    <div class="rating-badge"><span>★</span> {{ libro.promedio_calificacion }} <small style="color:#777; font-weight:normal;">({{ libro.total_resenas }})</small></div>
+                                    {% if 'audiolibro' in libro.tipo.lower() %}
+                                        <button type="button" onclick="event.stopPropagation(); reproducirAudiolibro('{{ libro.id }}', '{{ libro.titulo }}', '{{ libro.autor }}', '{{ url_for('static', filename='uploads/' + libro.archivo) }}')" class="btn-comprar">▶ Escuchar</button>
+                                    {% else %}
+                                        <a href="{{ url_for('abrir_libro', libro_id=libro.id) }}" onclick="event.stopPropagation();" class="btn-comprar">Abrir Archivo</a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="book-card-back">
+                                <h4 style="margin:0; font-size:15px; color: var(--color-yellow);">Opciones</h4>
+                                <button class="btn-flip-action" onclick="event.stopPropagation(); abrirModalCalificar({{ libro.id }}, '{{ libro.titulo }}')">⭐ Calificar / Opinión</button>
+                                <button class="btn-flip-action" style="background-color: var(--color-yellow);" onclick="event.stopPropagation(); abrirModalResenas({{ libro.id }}, '{{ libro.titulo }}')">📖 Ver Reseñas</button>
+                                <button style="background:none; border:none; color:#bbb; font-size:11px; cursor:pointer; text-decoration:underline;" onclick="event.stopPropagation(); voltearTarjetaManual(this)">Volver ↺</button>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- AUDIOLIBROS -->
+        {% if audiolibros %}
+        <div class="category-section">
+            <div class="category-header">
+                <h3 class="category-title">🎧 Audiolibros</h3>
+                <a href="{{ url_for('ver_categoria', nombre_categoria='audiolibros') }}" class="btn-ver-mas">Ver más &raquo;</a>
+            </div>
+            <div class="horizontal-scroll-container">
+                {% for libro in audiolibros %}
+                    <div class="book-card-container" onclick="voltearTarjeta(this)">
+                        <div class="book-card-flipper">
+                            <div class="book-card-front">
+                                {% if session.get('usuario_id') %}
+                                    <button type="button" class="btn-favorito" onclick="event.stopPropagation(); toggleFavorito({{ libro.id }}, this)">
+                                        {% if libro.id in libros_favoritos_ids %}⭐{% else %}☆{% endif %}
+                                    </button>
+                                {% endif %}
+                                <div>
+                                    <span class="badge">{{ libro.tipo }}</span>
+                                    <h3 title="{{ libro.titulo }}">{{ libro.titulo }}</h3>
+                                    <p class="autor"><strong>Autor:</strong> {{ libro.autor }}</p>
+                                    <div class="sinopsis-box">{{ libro.sinopsis }}</div>
+                                </div>
+                                <div>
+                                    <div class="rating-badge"><span>★</span> {{ libro.promedio_calificacion }} <small style="color:#777; font-weight:normal;">({{ libro.total_resenas }})</small></div>
+                                    <button type="button" onclick="event.stopPropagation(); reproducirAudiolibro('{{ libro.id }}', '{{ libro.titulo }}', '{{ libro.autor }}', '{{ url_for('static', filename='uploads/' + libro.archivo) }}')" class="btn-comprar">▶ Escuchar</button>
+                                </div>
+                            </div>
+                            <div class="book-card-back">
+                                <h4 style="margin:0; font-size:15px; color: var(--color-yellow);">Opciones</h4>
+                                <button class="btn-flip-action" onclick="event.stopPropagation(); abrirModalCalificar({{ libro.id }}, '{{ libro.titulo }}')">⭐ Calificar / Opinión</button>
+                                <button class="btn-flip-action" style="background-color: var(--color-yellow);" onclick="event.stopPropagation(); abrirModalResenas({{ libro.id }}, '{{ libro.titulo }}')">📖 Ver Reseñas</button>
+                                <button style="background:none; border:none; color:#bbb; font-size:11px; cursor:pointer; text-decoration:underline;" onclick="event.stopPropagation(); voltearTarjetaManual(this)">Volver ↺</button>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- POPULARES -->
+        {% if populares %}
+        <div class="category-section">
+            <div class="category-header">
+                <h3 class="category-title">🔥 Populares esta semana</h3>
+                <a href="{{ url_for('ver_categoria', nombre_categoria='populares') }}" class="btn-ver-mas">Ver más &raquo;</a>
+            </div>
+            <div class="horizontal-scroll-container">
+                {% for libro in populares %}
+                    <div class="book-card-container" onclick="voltearTarjeta(this)">
+                        <div class="book-card-flipper">
+                            <div class="book-card-front">
+                                {% if session.get('usuario_id') %}
+                                    <button type="button" class="btn-favorito" onclick="event.stopPropagation(); toggleFavorito({{ libro.id }}, this)">
+                                        {% if libro.id in libros_favoritos_ids %}⭐{% else %}☆{% endif %}
+                                    </button>
+                                {% endif %}
+                                <div>
+                                    <span class="badge">{{ libro.tipo }}</span>
+                                    <h3 title="{{ libro.titulo }}">{{ libro.titulo }}</h3>
+                                    <p class="autor"><strong>Autor:</strong> {{ libro.autor }}</p>
+                                    <div class="sinopsis-box">{{ libro.sinopsis }}</div>
+                                </div>
+                                <div>
+                                    <div class="rating-badge"><span>★</span> {{ libro.promedio_calificacion }} <small style="color:#777; font-weight:normal;">({{ libro.total_resenas }})</small></div>
+                                    {% if 'audiolibro' in libro.tipo.lower() %}
+                                        <button type="button" onclick="event.stopPropagation(); reproducirAudiolibro('{{ libro.id }}', '{{ libro.titulo }}', '{{ libro.autor }}', '{{ url_for('static', filename='uploads/' + libro.archivo) }}')" class="btn-comprar">▶ Escuchar</button>
+                                    {% else %}
+                                        <a href="{{ url_for('abrir_libro', libro_id=libro.id) }}" onclick="event.stopPropagation();" class="btn-comprar">Abrir Archivo</a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="book-card-back">
+                                <h4 style="margin:0; font-size:15px; color: var(--color-yellow);">Opciones</h4>
+                                <button class="btn-flip-action" onclick="event.stopPropagation(); abrirModalCalificar({{ libro.id }}, '{{ libro.titulo }}')">⭐ Calificar / Opinión</button>
+                                <button class="btn-flip-action" style="background-color: var(--color-yellow);" onclick="event.stopPropagation(); abrirModalResenas({{ libro.id }}, '{{ libro.titulo }}')">📖 Ver Reseñas</button>
+                                <button style="background:none; border:none; color:#bbb; font-size:11px; cursor:pointer; text-decoration:underline;" onclick="event.stopPropagation(); voltearTarjetaManual(this)">Volver ↺</button>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- MODAL PARA CALIFICAR -->
+    <div id="modal-calificar" class="modal-overlay" onclick="cerrarModalCalificar()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <button onclick="cerrarModalCalificar()" style="position:absolute; top:12px; right:15px; border:none; background:none; font-size:18px; cursor:pointer;">✖</button>
+            <h3 id="calificar-titulo-libro" style="margin-top:0; font-size:16px;">Calificar libro</h3>
+            <p style="font-size:13px; color:#64748b; margin-bottom:5px;">Toca las estrellas para asignar tu puntuación:</p>
+            
+            <div class="stars-selector" id="estrellas-contenedor">
+                <span class="star-item" onclick="seleccionarEstrella(1)">★</span>
+                <span class="star-item" onclick="seleccionarEstrella(2)">★</span>
+                <span class="star-item" onclick="seleccionarEstrella(3)">★</span>
+                <span class="star-item" onclick="seleccionarEstrella(4)">★</span>
+                <span class="star-item" onclick="seleccionarEstrella(5)">★</span>
+            </div>
+
+            <button type="button" onclick="toggleCuadroComentario()" style="background:none; border:none; color:var(--color-blue); font-weight:bold; font-size:12px; cursor:pointer; padding:0; margin:10px 0;">
+                💬 + Agregar un comentario u opinión (Opcional)
+            </button>
+
+            <div id="cuadro-comentario" style="display:none; margin-top:5px;">
+                <textarea id="texto-comentario" placeholder="Escribe tus impresiones del libro..." style="width:100%; height:65px; border:1px solid #cbd5e1; border-radius:6px; padding:8px; font-family:inherit; font-size:12px; box-sizing:border-box;"></textarea>
+            </div>
+
+            <button type="button" onclick="enviarCalificacion()" class="btn-comprar" style="margin-top:15px; background-color:var(--color-yellow);">Guardar Calificación</button>
+        </div>
+    </div>
+
+    <!-- MODAL DE RESEÑAS -->
+    <div id="modal-resenas" class="modal-overlay" onclick="cerrarModalResenas()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <button onclick="cerrarModalResenas()" style="position:absolute; top:12px; right:15px; border:none; background:none; font-size:18px; cursor:pointer;">✖</button>
+            <h3 id="modal-titulo-libro" style="margin-top:0; font-size:16px;">Reseñas</h3>
+            <p style="margin:5px 0; font-size:13px;"><strong>Promedio:</strong> ★ <span id="modal-promedio">0</span> / 5 (<span id="modal-total">0</span> opiniones)</p>
+            <hr style="border:0; border-top:1px solid #eee; margin:10px 0;">
+            <div id="modal-lista-comentarios" style="max-height: 250px; overflow-y: auto;">
+                <p style="color:#777; font-size:13px;">Cargando...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL CONFIRMACIÓN ELIMINAR RESEÑA -->
+    <div id="modal-confirmar-eliminar" class="modal-overlay" onclick="cerrarModalConfirmar()">
+        <div class="modal-content" onclick="event.stopPropagation()" style="max-width:350px; text-align:center;">
+            <h3 style="margin-top:0; font-size:16px; color:var(--color-dark);">🗑️ Eliminar Reseña</h3>
+            <p style="font-size:13px; color:#64748b; margin-bottom:20px;">¿Estás seguro de que deseas borrar esta reseña? Esta acción no se puede deshacer.</p>
+            
+            <div style="display:flex; gap:10px; justify-content:center;">
+                <button onclick="cerrarModalConfirmar()" style="background:#e2e8f0; color:#475569; border:none; padding:9px 16px; border-radius:6px; font-weight:bold; cursor:pointer; flex:1; font-size:12px;">Cancelar</button>
+                <button id="btn-confirmar-borrar" style="background:#ef4444; color:white; border:none; padding:9px 16px; border-radius:6px; font-weight:bold; cursor:pointer; flex:1; font-size:12px;">Eliminar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICACIÓN -->
+    <div id="toast-mensaje" class="toast-notificacion"></div>
+
+    <nav class="bottom-nav">
+     <a href="{{ url_for('pagina_principal') }}" class="nav-item active"><span>🏠</span> Inicio</a>
+     <a href="/explorar" class="nav-item"><span>📚</span> Explorar</a>
+     <a href="{{ url_for('ver_categoria', nombre_categoria='audiolibros') }}" class="nav-item"><span>🎧</span> Audiolibros</a>
+     <a href="{{ url_for('ver_guardados') }}" class="nav-item"><span>⭐</span> Guardados</a>
+     <a href="{{ url_for('perfil') }}" class="nav-item"><span>👤</span> Perfil</a>
+    </nav>
+
+    <div id="barra-reproductor-global" style="display: none; position: fixed; bottom: 60px; left: 0; width: 100%; background: #1e1e2f; color: white; padding: 10px 20px; z-index: 1000; align-items: center; justify-content: space-between; box-sizing: border-box;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <span>🎧</span>
+            <div><strong id="global-titulo" style="font-size: 13px; display: block;">Título</strong><span id="global-autor" style="font-size: 11px; color: #aaa;">Autor</span></div>
+        </div>
+        <audio id="audio-global" controls style="height: 35px; width: 45%;"></audio>
+        <button onclick="cerrarReproductorGlobal()" style="background:none; border:none; color:white; cursor:pointer; font-size:16px;">✖</button>
+    </div>
+
+    <script>
+        let libroIdSeleccionado = null;
+        let calificacionSeleccionada = 0;
+        let resenaIdABorrar = null;
+        let libroIdAsociado = null;
+        let tituloLibroAsociado = '';
+
+        function mostrarToast(mensaje, duracion = 3000) {
+            const toast = document.getElementById('toast-mensaje');
+            toast.textContent = mensaje;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, duracion);
+        }
+
+        function voltearTarjeta(elemento) {
+            elemento.classList.toggle('flipped');
+        }
+
+        function voltearTarjetaManual(btn) {
+            const contenedor = btn.closest('.book-card-container');
+            contenedor.classList.remove('flipped');
+        }
+
+        function abrirModalCalificar(libroId, titulo) {
+            libroIdSeleccionado = libroId;
+            calificacionSeleccionada = 0;
+            actualizarEstrellasVisuales(0);
+            document.getElementById('cuadro-comentario').style.display = 'none';
+            document.getElementById('texto-comentario').value = '';
+            document.getElementById('calificar-titulo-libro').textContent = 'Calificar: ' + titulo;
+            document.getElementById('modal-calificar').style.display = 'flex';
+        }
+
+        function seleccionarEstrella(num) {
+            calificacionSeleccionada = num;
+            actualizarEstrellasVisuales(num);
+        }
+
+        function actualizarEstrellasVisuales(num) {
+            const estrellas = document.querySelectorAll('#estrellas-contenedor .star-item');
+            estrellas.forEach((s, idx) => {
+                if (idx < num) {
+                    s.style.color = '#f59e0b';
+                } else {
+                    s.style.color = '#cbd5e1';
+                }
+            });
+        }
+
+        function toggleCuadroComentario() {
+            const cuadro = document.getElementById('cuadro-comentario');
+            cuadro.style.display = cuadro.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function enviarCalificacion() {
+            if (calificacionSeleccionada === 0) {
+                mostrarToast('⚠️ Por favor selecciona al menos una estrella.');
+                return;
+            }
+
+            const comentario = document.getElementById('texto-comentario').value.trim();
+
+            fetch('/agregar_resena/' + libroIdSeleccionado, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ calificacion: calificacionSeleccionada, comentario: comentario })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    cerrarModalCalificar();
+                    mostrarToast('✨ ¡Gracias por tu calificación!');
+                    setTimeout(() => { location.reload(); }, 1200);
+                } else {
+                    cerrarModalCalificar();
+                    mostrarToast('🔒 ' + (data.error || 'Debes iniciar sesión para calificar.'));
+                }
+            });
+        }
+
+        function cerrarModalCalificar() {
+            document.getElementById('modal-calificar').style.display = 'none';
+        }
+
+        function abrirModalResenas(libroId, titulo) {
+            document.getElementById('modal-titulo-libro').textContent = 'Reseñas de: ' + titulo;
+            document.getElementById('modal-resenas').style.display = 'flex';
+            
+            fetch('/obtener_resenas/' + libroId)
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('modal-promedio').textContent = data.promedio;
+                document.getElementById('modal-total').textContent = data.total;
+                
+                const contenedor = document.getElementById('modal-lista-comentarios');
+                if (data.resenas.length === 0) {
+                    contenedor.innerHTML = '<p style="color:#777; font-size:13px;">Aún no hay opiniones escritas para este título.</p>';
+                    return;
+                }
+
+                contenedor.innerHTML = data.resenas.map(r => `
+                    <div style="background:#f8fafc; padding:10px; border-radius:6px; margin-bottom:8px; border-left:3px solid var(--color-blue); position:relative;">
+                        <strong style="font-size:13px; color:#1e293b;">${r.usuario}</strong> 
+                        <span style="color:#f59e0b; font-size:12px; margin-left:5px;">${'★'.repeat(r.calificacion)}</span>
+                        <small style="color:#94a3b8; float:right;">${r.fecha}</small>
+                        ${r.puede_eliminar ? `<button onclick="eliminarResena(${r.id}, ${libroId}, '${titulo}')" title="Eliminar reseña" style="background:none; border:none; color:#ef4444; font-size:11px; cursor:pointer; float:right; margin-right:8px; font-weight:bold;">🗑️ Borrar</button>` : ''}
+                        <p style="margin:5px 0 0; font-size:12px; color:#475569;">${r.comentario || '<em>Sin comentario escrito.</em>'}</p>
+                    </div>
+                `).join('');
+            });
+        }
+
+        function eliminarResena(resenaId, libroId, titulo) {
+            resenaIdABorrar = resenaId;
+            libroIdAsociado = libroId;
+            tituloLibroAsociado = titulo;
+            
+            document.getElementById('btn-confirmar-borrar').onclick = ejecutarEliminacionResena;
+            document.getElementById('modal-confirmar-eliminar').style.display = 'flex';
+        }
+
+        function cerrarModalConfirmar() {
+            document.getElementById('modal-confirmar-eliminar').style.display = 'none';
+            resenaIdABorrar = null;
+        }
+
+        function ejecutarEliminacionResena() {
+            if (!resenaIdABorrar) return;
+
+            fetch('/eliminar_resena/' + resenaIdABorrar, { method: 'DELETE' })
+            .then(res => res.json())
+            .then(data => {
+                cerrarModalConfirmar();
+                if (data.status === 'success') {
+                    mostrarToast('🗑️ Reseña eliminada correctamente.');
+                    abrirModalResenas(libroIdAsociado, tituloLibroAsociado);
+                } else {
+                    mostrarToast('⚠️ ' + (data.error || 'No se pudo eliminar la reseña.'));
+                }
+            });
+        }
+
+        function cerrarModalResenas() {
+            document.getElementById('modal-resenas').style.display = 'none';
+        }
+
+        function quitarDeContinuar(libroId) {
+            fetch('/ocultar_historial/' + libroId, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    const card = document.getElementById('continuar-container-' + libroId);
+                    if (card) card.remove();
+                    const contenedor = document.querySelector('#seccion-continuar .horizontal-scroll-container');
+                    if (contenedor && contenedor.children.length === 0) {
+                        document.getElementById('seccion-continuar').style.display = 'none';
+                    }
+                }
+            });
+        }
+
+        function toggleFavorito(idLibro, boton) {
+            fetch('/toggle_favorito/' + idLibro, { method: 'POST', headers: { 'Content-Type': 'application/json' } })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    boton.textContent = data.estado === 'agregado' ? '⭐' : '☆';
+                }
+            });
+        }
+
+        function reproducirAudiolibro(idLibro, titulo, autor, archivoUrl) {
+            const barra = document.getElementById('barra-reproductor-global');
+            const audio = document.getElementById('audio-global');
+            document.getElementById('global-titulo').textContent = titulo;
+            document.getElementById('global-autor').textContent = autor;
+            barra.style.display = 'flex';
+
+            const usuarioActual = "{{ session.get('usuario_id', 'invitado') }}";
+            const storageKey = 'audiolibro_tiempo_' + usuarioActual + '_' + idLibro;
+
+            if (audio.src !== window.location.origin + archivoUrl) {
+                audio.src = archivoUrl;
+                const tiempoGuardado = localStorage.getItem(storageKey);
+                if (tiempoGuardado) {
+                    audio.currentTime = parseFloat(tiempoGuardado);
+                }
+            }
+            audio.play();
+            audio.ontimeupdate = function() {
+                localStorage.setItem(storageKey, audio.currentTime);
+            };
+        }
+
+        function cerrarReproductorGlobal() {
+            const audio = document.getElementById('audio-global');
+            audio.pause();
+            document.getElementById('barra-reproductor-global').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

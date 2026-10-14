@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subir Nuevo Material - Llantopía</title>
+    <style>
+        :root {
+            --color-bg: #FFF3A0; --color-yellow: #FFD700; --color-slate: #4A4E57;
+            --color-dark: #2A2D32; --color-red: #9E2A2B; --color-blue: #4CC9F0; --color-white: #FFFFFF;
+        }
+        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; background-color: var(--color-bg); color: var(--color-dark); padding-bottom: 85px; }
+        .container { max-width: 600px; margin: 40px auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h2 { color: var(--color-slate); margin-top: 0; margin-bottom: 20px; font-size: 22px; text-align: center; }
+        
+        label { display: block; font-weight: bold; margin-bottom: 6px; font-size: 13px; color: var(--color-dark); }
+        input[type="text"], select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; margin-bottom: 15px; box-sizing: border-box; font-family: inherit; font-size: 13px; }
+        textarea { height: 90px; resize: vertical; }
+
+        .file-box { border: 2px dashed #cbd5e1; padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 20px; background: #f8fafc; }
+        
+        .btn-enviar { background-color: var(--color-blue); color: var(--color-dark); border: none; padding: 12px; width: 100%; font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 14px; }
+        .btn-enviar:hover { opacity: 0.9; }
+        
+        .link-volver { display: block; text-align: center; margin-top: 15px; color: var(--color-slate); text-decoration: none; font-size: 13px; font-weight: bold; }
+        .link-volver:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Subir Nuevo Material</h2>
+        
+        <form action="/agregar-libro" method="POST" enctype="multipart/form-data">
+            <label>Título del Libro:</label>
+            <input type="text" name="titulo" required>
+
+            <label>Autor:</label>
+            <input type="text" name="autor" required>
+
+            <label>Sinopsis:</label>
+            <textarea name="sinopsis" required></textarea>
+
+            <label>Tipo de Formato:</label>
+            <select name="tipo" required>
+                <option value="PDF">PDF (Libro Digital)</option>
+                <option value="Audiolibro">Audiolibro (Archivo de Audio)</option>
+            </select>
+
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; font-weight: bold; margin-bottom: 5px; color: var(--color-dark);">Categorías / Géneros (puedes seleccionar varias):</label>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; background: #fafafa; padding: 10px; border-radius: 6px; border: 1px solid #ccc;">
+                    <label style="font-weight: normal; cursor: pointer;"><input type="checkbox" name="categorias" value="Romance"> Romance</label>
+                    <label style="font-weight: normal; cursor: pointer;"><input type="checkbox" name="categorias" value="Fantasía"> Fantasía</label>
+                    <label style="font-weight: normal; cursor: pointer;"><input type="checkbox" name="categorias" value="Ciencia Ficción"> Ciencia Ficción</label>
+                    <label style="font-weight: normal; cursor: pointer;"><input type="checkbox" name="categorias" value="Estudio"> Estudio</label>
+                    <label style="font-weight: normal; cursor: pointer;"><input type="checkbox" name="categorias" value="Aventura"> Aventura</label>
+                    <label style="font-weight: normal; cursor: pointer;"><input type="checkbox" name="categorias" value="Novela"> Novela</label>
+                    <label style="font-weight: normal; cursor: pointer;"><input type="checkbox" name="categorias" value="Terror"> Terror</label>
+                    <label style="font-weight: normal; cursor: pointer;"><input type="checkbox" name="categorias" value="Misterio"> Misterio</label>
+                    <label style="font-weight: normal; cursor: pointer;"><input type="checkbox" name="categorias" value="Desarrollo Personal"> Desarrollo Personal</label>
+                    <label style="font-weight: normal; cursor: pointer;"><input type="checkbox" name="categorias" value="Otro"> Otro</label>
+                </div>
+            </div>
+
+            <label>Archivo del Libro (PDF o Audio):</label>
+            <div class="file-box">
+                <input type="file" name="archivo" required style="border:none; background:none;">
+            </div>
+
+            <button type="submit" class="btn-enviar">Guardar y Publicar</button>
+        </form>
+
+        <a href="{{ url_for('pagina_principal') }}" class="link-volver">← Volver al catálogo</a>
+    </div>
+</body>
+</html>

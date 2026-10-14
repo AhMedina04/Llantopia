@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escuchando: {{ libro.titulo }}</title>
+    <style>
+        :root {
+            --color-bg: #FFF3A0; --color-yellow: #FFD700; --color-slate: #4A4E57;
+            --color-dark: #2A2D32; --color-red: #9E2A2B; --color-blue: #4CC9F0; --color-white: #FFFFFF;
+        }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: var(--color-bg); margin: 0; color: var(--color-dark); display: flex; flex-direction: column; height: 100vh; justify-content: center; align-items: center; }
+        .player-card { background: var(--color-white); padding: 40px; border-radius: 15px; box-shadow: 0 6px 20px rgba(0,0,0,0.08); width: 90%; max-width: 450px; text-align: center; }
+        h2 { color: var(--color-slate); margin-top: 0; margin-bottom: 5px; }
+        p { color: #666; font-size: 14px; margin-bottom: 25px; }
+        audio { width: 100%; margin: 20px 0; }
+        .volver { display: inline-block; margin-top: 20px; text-decoration: none; color: var(--color-blue); font-weight: bold; }
+        .volver:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="player-card">
+        <span style="font-size: 48px;">🎧</span>
+        <h2>{{ libro.titulo }}</h2>
+        <p>Autor: {{ libro.autor }}</p>
+        
+        <audio id="audio-elemento" controls></audio>
+        
+        <br>
+        <a href="{{ url_for('pagina_principal') }}" class="volver">← Volver al Catálogo</a>
+    </div>
+
+    <script>
+        const audio = document.getElementById('audio-elemento');
+        const archivoUrl = "{{ url_for('static', filename='uploads/' + libro.archivo) }}";
+        const usuarioActual = "{{ session.get('usuario_id', 'invitado') }}";
+        const storageKey = 'audiolibro_tiempo_' + usuarioActual + '_' + "{{ libro.id }}";
+
+        audio.src = archivoUrl;
+        const tiempoGuardado = localStorage.getItem(storageKey);
+        if (tiempoGuardado) {
+            audio.currentTime = parseFloat(tiempoGuardado);
+        }
+
+        audio.play().catch(e => console.log("Reproducción automática bloqueada por el navegador"));
+
+        audio.ontimeupdate = function() {
+            localStorage.setItem(storageKey, audio.currentTime);
+        };
+    </script>
+</body>
+</html>

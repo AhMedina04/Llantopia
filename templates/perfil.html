@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Perfil - Llantopía</title>
+    <style>
+        :root {
+            --color-bg: #FFF3A0; --color-yellow: #FFD700; --color-slate: #4A4E57;
+            --color-dark: #2A2D32; --color-red: #9E2A2B; --color-blue: #4CC9F0; --color-white: #FFFFFF;
+        }
+        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; background-color: var(--color-bg); color: var(--color-dark); padding-bottom: 85px; }
+        header { background-color: var(--color-yellow); color: var(--color-dark); padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+        header h1 { margin: 0; font-size: 20px; color: var(--color-slate); }
+        .container { max-width: 1000px; margin: 30px auto; padding: 0 15px; }
+        .card { background: var(--color-white); padding: 25px; border-radius: 12px; box-shadow: 0px 4px 10px rgba(0,0,0,0.05); margin-bottom: 25px; }
+        .card h3 { color: var(--color-slate); margin-top: 0; border-bottom: 2px solid var(--color-bg); padding-bottom: 10px; font-size: 18px; }
+        
+        .grid-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .stat-box { background: #fdfae5; padding: 15px; border-radius: 8px; text-align: center; border: 1px solid #f3ecb8; }
+        .stat-box h4 { margin: 0 0 5px; color: var(--color-slate); font-size: 13px; }
+        .stat-box p { margin: 0; font-size: 20px; font-weight: bold; color: var(--color-dark); }
+        
+        .grid-metas { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px; }
+        @media (max-width: 768px) { .grid-metas { grid-template-columns: 1fr; } }
+
+        .btn { background-color: var(--color-blue); color: var(--color-dark); padding: 10px 15px; border: none; border-radius: 6px; cursor: pointer; text-decoration: none; display: inline-block; font-weight: bold; font-size: 14px; }
+        .btn:hover { opacity: 0.9; }
+        input[type="password"], input[type="number"], input[type="text"] { width: 100%; padding: 10px; margin: 8px 0 15px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; font-size: 13px; }
+        th { background-color: #f8f9fa; color: var(--color-slate); }
+        
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--color-white); display: flex; justify-content: space-around; padding: 10px 0; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); z-index: 999; }
+        .nav-item { text-decoration: none; color: var(--color-slate); font-size: 12px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+        .nav-item span { font-size: 18px; }
+        .nav-item.active, .nav-item:hover { color: var(--color-red); font-weight: bold; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>⚙️ Configuración y Perfil</h1>
+        <a href="{{ url_for('pagina_principal') }}" class="btn" style="background-color: var(--color-white); border: 1px solid #ccc;">🏠 Catálogo</a>
+    </header>
+
+    <div class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <p style="color: {% if category == 'danger' %}var(--color-red){% else %}green{% endif %}; font-weight: bold; background: white; padding: 12px; border-radius: 8px;">{{ message }}</p>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="card">
+            <h3>👤 Información de la Cuenta</h3>
+            <p><strong>Nombre:</strong> {{ usuario.nombre }}</p>
+            <p><strong>Correo electrónico:</strong> {{ usuario.correo }}</p>
+            <p><strong>Tipo de Cuenta:</strong> 
+                {% if es_admin %}
+                    <span style="background:#d4edda; color:#155724; padding:3px 8px; border-radius:4px; font-size:12px; font-weight:bold;">Administrador / Autorizado</span>
+                {% else %}
+                    <span style="background:#e2e3e5; color:#383d41; padding:3px 8px; border-radius:4px; font-size:12px; font-weight:bold;">Usuario Regular</span>
+                {% endif %}
+            </p>
+            <p><strong>Miembro desde:</strong> {{ usuario.fecha_registro.strftime('%d/%m/%Y') if usuario.fecha_registro else 'Fecha no disponible' }}</p>
+        </div>
+
+        <div class="grid-metas">
+            <div class="card" style="margin-bottom: 0;">
+                <h3>🎯 Meta de Lectura Anual</h3>
+                <p>Has leído <strong>{{ libros_leidos_count }}</strong> de <strong>{{ meta_anual }}</strong> libros este año.</p>
+                <div style="background: #e2e8f0; border-radius: 8px; overflow: hidden; height: 18px; margin-bottom: 15px;">
+                    <div style="width: {{ porcentaje_meta }}%; background: var(--color-blue); height: 100%; text-align: center; color: var(--color-dark); font-size: 11px; font-weight: bold; line-height: 18px;">{{ porcentaje_meta }}%</div>
+                </div>
+                <form method="POST" style="display: flex; gap: 10px; align-items: center;">
+                    <input type="number" name="meta_anual" value="{{ meta_anual }}" min="1" max="100" style="margin:0;" required>
+                    <button type="submit" class="btn" style="white-space: nowrap;">Actualizar</button>
+                </form>
+            </div>
+
+            <div class="card" style="margin-bottom: 0; display: flex; flex-direction: column; justify-content: space-between;">
+                <h3>🎧 Actividad de Audiolibros</h3>
+                <div style="text-align: center; padding: 10px 0;">
+                    <p style="font-size: 13px; color: var(--color-slate); margin-bottom: 5px;">Total de audiolibros escuchados:</p>
+                    <p style="font-size: 32px; font-weight: bold; color: var(--color-blue); margin: 0;">{{ audiolibros_escuchados_count }}</p>
+                </div>
+                <p style="font-size: 11px; color: #888; text-align: center; margin: 0;">Contabilizados por separado de tus metas escritas.</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>🔒 Seguridad / Cambiar Contraseña</h3>
+            <form method="POST">
+                <label style="font-size:13px; font-weight:bold; color:var(--color-slate);">Contraseña Actual:</label>
+                <input type="password" name="password_actual" required>
+                
+                <label style="font-size:13px; font-weight:bold; color:var(--color-slate);">Nueva Contraseña:</label>
+                <input type="password" name="password_nueva" required>
+                
+                <button type="submit" class="btn">Actualizar Contraseña</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h3>📖 Historial Reciente de Lectura</h3>
+            {% if historial %}
+                <ul style="padding-left: 20px; font-size: 14px; color: var(--color-slate);">
+                    {% for h in historial %}
+                        <li style="margin-bottom: 6px;"><strong>{{ h.titulo }}</strong> — Última vez visto: {{ h.ultima_interaccion.strftime('%d/%m/%Y %H:%M') if h.ultima_interaccion else 'N/A' }}</li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p style="color: #666;">No hay actividad reciente registrada todavía.</p>
+            {% endif %}
+        </div>
+
+        {% if es_admin %}
+        <div class="card" style="border-left: 5px solid var(--color-blue);">
+            <h3>🛠️ Panel de Control de Administrador (Llantopía)</h3>
+            
+            <div class="grid-stats">
+                <div class="stat-box">
+                    <h4>Usuarios Registrados</h4>
+                    <p>{{ total_usuarios }}</p>
+                </div>
+                <div class="stat-box">
+                    <h4>Libros PDF</h4>
+                    <p>{{ total_libros }}</p>
+                </div>
+                <div class="stat-box">
+                    <h4>Audiolibros</h4>
+                    <p>{{ total_audiolibros }}</p>
+                </div>
+            </div>
+
+            <!-- APARTADO DE GESTIÓN, BÚSQUEDA Y FILTROS DE LIBROS -->
+            <h4 style="margin-top: 25px; color: var(--color-slate);">📚 Gestión y Catálogo de Libros:</h4>
+            
+            <form method="GET" action="{{ url_for('perfil') }}" style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
+                <input type="text" name="q_admin" value="{{ busqueda_admin }}" placeholder="Buscar por título o autor..." style="flex-grow: 1; margin: 0; padding: 8px;">
+                <select name="cat_admin" style="padding: 8px; border-radius: 6px; border: 1px solid #ccc; background: white;">
+                    <option value="">Todas las categorías</option>
+                    <option value="Romance" {% if categoria_admin == 'Romance' %}selected{% endif %}>Romance</option>
+                    <option value="Fantasía" {% if categoria_admin == 'Fantasía' %}selected{% endif %}>Fantasía</option>
+                    <option value="Ciencia Ficción" {% if categoria_admin == 'Ciencia Ficción' %}selected{% endif %}>Ciencia Ficción</option>
+                    <option value="Estudio" {% if categoria_admin == 'Estudio' %}selected{% endif %}>Estudio</option>
+                    <option value="Aventura" {% if categoria_admin == 'Aventura' %}selected{% endif %}>Aventura</option>
+                    <option value="Novela" {% if categoria_admin == 'Novela' %}selected{% endif %}>Novela</option>
+                    <option value="Terror" {% if categoria_admin == 'Terror' %}selected{% endif %}>Terror</option>
+                    <option value="Misterio" {% if categoria_admin == 'Misterio' %}selected{% endif %}>Misterio</option>
+                    <option value="Desarrollo Personal" {% if categoria_admin == 'Desarrollo Personal' %}selected{% endif %}>Desarrollo Personal</option>
+                    <option value="Otro" {% if categoria_admin == 'Otro' %}selected{% endif %}>Otro</option>
+                </select>
+                <button type="submit" class="btn" style="padding: 8px 15px; margin: 0;">Filtrar</button>
+                {% if busqueda_admin or categoria_admin %}
+                    <a href="{{ url_for('perfil') }}" style="background: #ccc; color: black; padding: 8px 12px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 14px; display: flex; align-items: center;">Limpiar</a>
+                {% endif %}
+            </form>
+
+            <div style="overflow-x: auto; max-height: 350px; overflow-y: auto; border: 1px solid #eee; border-radius: 6px; margin-bottom: 25px;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Título</th>
+                            <th>Autor</th>
+                            <th>Categoría</th>
+                            <th>Tipo</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if lista_libros_admin %}
+                            {% for lib in lista_libros_admin %}
+                            <tr>
+                                <td>{{ lib.id }}</td>
+                                <td><strong>{{ lib.titulo }}</strong></td>
+                                <td>{{ lib.autor }}</td>
+                                <td>{{ lib.categoria }}</td>
+                                <td>{{ lib.tipo }}</td>
+                                <td>
+                                    <a href="{{ url_for('eliminar_libro', libro_id=lib.id) }}" onclick="return confirm('¿Estás seguro de eliminar este libro del sistema?');" style="color: var(--color-red); text-decoration: none; font-weight: bold;">🗑️ Eliminar</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr><td colspan="6" style="text-align: center; color: #666;">No se encontraron libros con los filtros seleccionados.</td></tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+
+            <h4 style="margin-top: 20px; color: var(--color-slate);">👥 Lista de Usuarios en el Sistema:</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Correo</th>
+                        <th>Registro</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in lista_usuarios %}
+                    <tr>
+                        <td>{{ u.id }}</td>
+                        <td>{{ u.nombre }}</td>
+                        <td>{{ u.correo }}</td>
+                        <td>{{ u.fecha_registro.strftime('%d/%m/%Y') if u.fecha_registro else 'N/A' }}</td>
+                        <td>
+                            {% if u.correo not in CORREOS_AUTORIZADOS %}
+                                <a href="{{ url_for('eliminar_usuario', usuario_id=u.id) }}" onclick="return confirm('¿Eliminar a este usuario?');" style="color:var(--color-red); text-decoration:none; font-weight:bold;">Eliminar</a>
+                            {% else %}
+                                <span style="color: #888; font-size: 12px;">Admin</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+    </div>
+    
+     <nav class="bottom-nav">
+      <a href="{{ url_for('pagina_principal') }}" class="nav-item"><span>🏠</span> Inicio</a>
+      <a href="/explorar" class="nav-item"><span>📚</span> Explorar</a>
+      <a href="{{ url_for('ver_categoria', nombre_categoria='audiolibros') }}" class="nav-item"><span>🎧</span> Audiolibros</a>
+      <a href="{{ url_for('ver_guardados') }}" class="nav-item"><span>⭐</span> Guardados</a>
+      <a href="{{ url_for('perfil') }}" class="nav-item"><span>👤</span> Perfil</a>
+    </nav>
+</body>
+</html>
