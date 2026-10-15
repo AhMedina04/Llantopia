@@ -101,7 +101,6 @@
             queueRenderPage(pageNum);
         });
 
-        // CARGA DEL PDF CON CAPTURA DE ERRORES VISIBLE
         pdfjsLib.getDocument(urlPdf).promise.then(function(pdfDoc_) {
             pdfDoc = pdfDoc_;
             document.getElementById('page-count').textContent = pdfDoc.numPages;
@@ -121,103 +120,5 @@
                 </div>`;
         });
     </script>
-
-    <!-- Botón para abrir el Modal de Reseñas -->
-    <div style="text-align: center; background: #1a1a1a; padding: 10px;">
-        <button onclick="abrirModalResenas({{ libro.id }})" class="btn" style="background-color: var(--color-yellow); border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer;">
-            ⭐ Ver / Dejar Reseña
-        </button>
-    </div>
-
-<!-- Estructura del Modal -->
-<div id="modal-resenas" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:2000; justify-content:center; align-items:center;">
-    <div style="background:white; padding:25px; border-radius:12px; width:90%; max-width:500px; max-height:80vh; overflow-y:auto; position:relative;">
-        <button onclick="cerrarModalResenas()" style="position:absolute; top:10px; right:15px; border:none; background:none; font-size:20px; cursor:pointer;">✖</button>
-        
-        <h3 style="margin-top:0;">⭐ Reseñas de {{ libro.titulo }}</h3>
-        <p><strong>Promedio:</strong> <span id="promedio-estrellas">0</span> / 5 (<span id="total-resenas">0</span> opiniones)</p>
-        <hr>
-
-        {% if session.get('usuario_id') and session.get('nombre_usuario') != 'Invitado' %}
-        <form id="form-resena" onsubmit="guardarResena(event, {{ libro.id }})">
-            <h4>Deja tu opinión:</h4>
-            <div style="margin-bottom:10px;">
-                <label>Calificación:</label>
-                <select id="resena-calificacion" required style="padding:5px; border-radius:4px;">
-                    <option value="5">⭐⭐⭐⭐⭐ (5/5)</option>
-                    <option value="4">⭐⭐⭐⭐ (4/5)</option>
-                    <option value="3">⭐⭐⭐ (3/5)</option>
-                    <option value="2">⭐⭐ (2/5)</option>
-                    <option value="1">⭐ (1/5)</option>
-                </select>
-            </div>
-            <textarea id="resena-comentario" placeholder="Escribe tu comentario aquí..." style="width:100%; height:70px; padding:8px; border-radius:6px; border:1px solid #ccc; box-sizing:border-box;"></textarea>
-            <button type="submit" class="btn" style="margin-top:8px; width:100%;">Enviar Reseña</button>
-        </form>
-        <hr>
-        {% endif %}
-
-        <h4>Comentarios de la comunidad:</h4>
-        <div id="lista-comentarios">
-            <p style="color:#777;">Cargando opiniones...</p>
-        </div>
-    </div>
-</div>
-
-<script>
-function abrirModalResenas(libroId) {
-    document.getElementById('modal-resenas').style.display = 'flex';
-    cargarResenas(libroId);
-}
-
-function cerrarModalResenas() {
-    document.getElementById('modal-resenas').style.display = 'none';
-}
-
-function cargarResenas(libroId) {
-    fetch('/obtener_resenas/' + libroId)
-    .then(res => res.json())
-    .then(data => {
-        document.getElementById('promedio-estrellas').textContent = data.promedio;
-        document.getElementById('total-resenas').textContent = data.total;
-        
-        const contenedor = document.getElementById('lista-comentarios');
-        if (data.resenas.length === 0) {
-            contenedor.innerHTML = '<p style="color:#777;">Aún no hay reseñas. ¡Sé el primero en calificar!</p>';
-            return;
-        }
-
-        contenedor.innerHTML = data.resenas.map(r => `
-            <div style="background:#f9f9f9; padding:10px; border-radius:6px; margin-bottom:8px; border-left:3px solid var(--color-blue);">
-                <strong style="font-size:13px;">${r.usuario}</strong> 
-                <span style="color:#f39c12; font-size:12px;">${'⭐'.repeat(r.calificacion)}</span>
-                <small style="color:#888; float:right;">${r.fecha}</small>
-                <p style="margin:5px 0 0; font-size:13px; color:#444;">${r.comentario || '<em>Sin comentario escrito.</em>'}</p>
-            </div>
-        `).join('');
-    });
-}
-
-function guardarResena(e, libroId) {
-    e.preventDefault();
-    const calificacion = document.getElementById('resena-calificacion').value;
-    const comentario = document.getElementById('resena-comentario').value;
-
-    fetch('/agregar_resena/' + libroId, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ calificacion: calificacion, comentario: comentario })
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.status === 'success') {
-            document.getElementById('resena-comentario').value = '';
-            cargarResenas(libroId);
-        } else {
-            alert(data.error || 'Error al guardar la reseña.');
-        }
-    });
-}
-</script>
 </body>
 </html>
