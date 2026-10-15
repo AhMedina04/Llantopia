@@ -156,7 +156,8 @@
                                 <div>
                                     <div class="rating-badge"><span>★</span> {{ libro.promedio_calificacion }} <small style="color:#777; font-weight:normal;">({{ libro.total_resenas }})</small></div>
                                     {% if 'audiolibro' in libro.tipo.lower() %}
-                                        <button type="button" onclick="event.stopPropagation(); reproducirAudiolibro('{{ libro.id }}', '{{ libro.titulo }}', '{{ libro.autor }}', '{{ url_for('static', filename='uploads/' + libro.archivo) }}')" class="btn-comprar">▶ Escuchar</button>
+                                        {% set url_audio = libro.archivo if libro.archivo.startswith('http') else url_for('static', filename='uploads/' + libro.archivo) %}
+                                        <button type="button" onclick="event.stopPropagation(); reproducirAudiolibro('{{ libro.id }}', '{{ libro.titulo }}', '{{ libro.autor }}', '{{ url_audio }}')" class="btn-comprar">▶ Escuchar</button>
                                     {% else %}
                                         <a href="{{ url_for('abrir_libro', libro_id=libro.id) }}" onclick="event.stopPropagation();" class="btn-comprar">Abrir Archivo</a>
                                     {% endif %}
@@ -473,7 +474,7 @@
             const usuarioActual = "{{ session.get('usuario_id', 'invitado') }}";
             const storageKey = 'audiolibro_tiempo_' + usuarioActual + '_' + idLibro;
 
-            if (audio.src !== window.location.origin + archivoUrl) {
+            if (audio.src !== archivoUrl) {
                 audio.src = archivoUrl;
                 const tiempoGuardado = localStorage.getItem(storageKey);
                 if (tiempoGuardado) {

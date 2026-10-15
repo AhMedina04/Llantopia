@@ -42,7 +42,9 @@
     </div>
 
     <script>
-        const urlPdf = "{{ url_for('static', filename='uploads/' + libro.archivo) }}";
+        const archivoRuta = "{{ libro.archivo }}";
+        const urlPdf = archivoRuta.startsWith('http') ? archivoRuta : "{{ url_for('static', filename='uploads/') }}" + archivoRuta;
+        
         const usuarioActual = "{{ session.get('usuario_id', 'invitado') }}";
         const storageKeyPdf = 'libro_pagina_' + usuarioActual + '_' + "{{ libro.id }}";
 

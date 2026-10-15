@@ -32,7 +32,9 @@
 
     <script>
         const audio = document.getElementById('audio-elemento');
-        const archivoUrl = "{{ url_for('static', filename='uploads/' + libro.archivo) }}";
+        const archivoRuta = "{{ libro.archivo }}";
+        const archivoUrl = archivoRuta.startsWith('http') ? archivoRuta : "{{ url_for('static', filename='uploads/') }}" + archivoRuta;
+
         const usuarioActual = "{{ session.get('usuario_id', 'invitado') }}";
         const storageKey = 'audiolibro_tiempo_' + usuarioActual + '_' + "{{ libro.id }}";
 
