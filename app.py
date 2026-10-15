@@ -640,8 +640,12 @@ def agregar_libro():
         archivo = request.files.get('archivo')
         if archivo and archivo.filename != '':
             try:
-                # SOLUCIÓN: Usar archivo.stream para que Cloudinary lea el flujo de datos correctamente en producción
-                upload_result = cloudinary.uploader.upload(archivo.stream, resource_type="auto")
+                # Se agrega access_mode="public" para evitar errores 401 de acceso no autorizado
+                upload_result = cloudinary.uploader.upload(
+                    archivo.stream, 
+                    resource_type="auto",
+                    access_mode="public"
+                )
                 url_archivo = upload_result.get('secure_url')
             except Exception as e:
                 flash(f'Error al subir el archivo a Cloudinary: {e}', 'danger')
