@@ -541,7 +541,6 @@ def eliminar_libro(libro_id):
         return redirect(url_for('pagina_principal'))
     libro_a_borrar = Libro.query.get_or_404(libro_id)
     
-    # Intenta eliminar archivo local si existiera
     try:
         if not libro_a_borrar.archivo.startswith('http'):
             archivo_path = os.path.join(app.config['UPLOAD_FOLDER'], libro_a_borrar.archivo)
@@ -596,7 +595,6 @@ def registro():
             return redirect(url_for('registro'))
             
         contrasena_hash = generate_password_hash(contrasena_form)
-        
         nuevo_usuario = Usuario(nombre=nombre_form, correo=correo_form, contrasena=contrasena_hash)
         db.session.add(nuevo_usuario)
         db.session.commit()
@@ -613,7 +611,6 @@ def iniciarSesion():
     if request.method == 'POST':
         correo_form = request.form['correo']
         contrasena_form = request.form['contrasena']
-        
         usuario = Usuario.query.filter_by(correo=correo_form).first()
         
         if usuario and check_password_hash(usuario.contrasena, contrasena_form):
@@ -642,10 +639,9 @@ def agregar_libro():
     if request.method == 'POST':
         archivo = request.files.get('archivo')
         if archivo and archivo.filename != '':
-            # Sube el archivo (PDF, MP3, etc.) directamente a Cloudinary
             try:
-                # resource_type="auto" permite que Cloudinary detecte si es imagen, video o audio/archivo raw
-                upload_result = cloudinary.uploader.upload(archivo, resource_type="auto")
+                # SOLUCIÓN: Usar archivo.stream para que Cloudinary lea el flujo de datos correctamente en producción
+                upload_result = cloudinary.uploader.upload(archivo.stream, resource_type="auto")
                 url_archivo = upload_result.get('secure_url')
             except Exception as e:
                 flash(f'Error al subir el archivo a Cloudinary: {e}', 'danger')
