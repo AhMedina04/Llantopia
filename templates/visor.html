@@ -101,6 +101,7 @@
             queueRenderPage(pageNum);
         });
 
+        // CARGA DEL PDF CON CAPTURA DE ERRORES VISIBLE
         pdfjsLib.getDocument(urlPdf).promise.then(function(pdfDoc_) {
             pdfDoc = pdfDoc_;
             document.getElementById('page-count').textContent = pdfDoc.numPages;
@@ -110,12 +111,23 @@
             }
 
             renderPage(pageNum);
+        }).catch(function(error) {
+            console.error('Error al cargar el PDF:', error);
+            document.querySelector('.viewer-container').innerHTML = `
+                <div style="color: #ff6b6b; text-align: center; padding: 30px; font-weight: bold; background: #222; border-radius: 8px; border: 1px solid #444;">
+                    ⚠️ No se pudo cargar el archivo PDF desde la nube.<br><br>
+                    <small style="color: #aaa; font-weight: normal;">URL intentada: ${urlPdf}</small><br>
+                    <small style="color: #ff8787; font-weight: normal;">Detalle técnico: ${error.message || error}</small>
+                </div>`;
         });
     </script>
+
     <!-- Botón para abrir el Modal de Reseñas -->
-<button onclick="abrirModalResenas({{ libro.id }})" class="btn" style="background-color: var(--color-yellow); margin-top: 10px;">
-    ⭐ Ver / Dejar Reseña
-</button>
+    <div style="text-align: center; background: #1a1a1a; padding: 10px;">
+        <button onclick="abrirModalResenas({{ libro.id }})" class="btn" style="background-color: var(--color-yellow); border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer;">
+            ⭐ Ver / Dejar Reseña
+        </button>
+    </div>
 
 <!-- Estructura del Modal -->
 <div id="modal-resenas" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:2000; justify-content:center; align-items:center;">
