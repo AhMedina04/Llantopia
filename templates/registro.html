@@ -9,11 +9,12 @@
             --color-bg: #FFF3A0; --color-yellow: #FFD700; --color-slate: #4A4E57;
             --color-dark: #2A2D32; --color-red: #9E2A2B; --color-blue: #4CC9F0; --color-white: #FFFFFF;
         }
-        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; background-color: var(--color-bg); color: var(--color-dark); display: flex; justify-content: center; align-items: center; height: 100vh; }
-        .container { background: white; padding: 35px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 400px; box-sizing: border-box; }
-        h2 { color: var(--color-slate); margin-top: 0; margin-bottom: 20px; font-size: 22px; text-align: center; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; background-color: var(--color-bg); color: var(--color-dark); display: flex; justify-content: center; align-items: center; min-height: 100vh; box-sizing: border-box; padding: 20px; }
+        .container { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 400px; box-sizing: border-box; text-align: center; }
+        .logo-img { width: 80px; height: 80px; object-fit: cover; border-radius: 50%; margin-bottom: 12px; box-shadow: 0 3px 8px rgba(0,0,0,0.1); border: 2px solid var(--color-yellow); }
+        h2 { color: var(--color-slate); margin-top: 0; margin-bottom: 20px; font-size: 20px; }
         
-        label { display: block; font-weight: bold; margin-bottom: 6px; font-size: 13px; color: var(--color-dark); }
+        label { display: block; font-weight: bold; margin-bottom: 6px; font-size: 13px; color: var(--color-dark); text-align: left; }
         input[type="text"], input[type="email"], input[type="password"] { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; margin-bottom: 15px; box-sizing: border-box; font-family: inherit; font-size: 13px; }
         
         .btn-enviar { background-color: var(--color-blue); color: var(--color-dark); border: none; padding: 12px; width: 100%; font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 14px; margin-top: 5px; }
@@ -27,6 +28,7 @@
 </head>
 <body>
     <div class="container">
+        <img src="{{ url_for('static', filename='logo.jpg') }}" alt="Logo Llantopía" class="logo-img">
         <h2>Crear Cuenta en Llantopía</h2>
 
         {% with messages = get_flashed_messages(with_categories=true) %}
@@ -37,7 +39,7 @@
             {% endif %}
         {% endwith %}
         
-        <form action="/registro" method="POST">
+        <form action="/registro" method="POST" style="text-align: left;">
             <label>Nombre Completo:</label>
             <input type="text" name="nombre" required>
 
